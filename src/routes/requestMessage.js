@@ -3,38 +3,54 @@ const AssistantV2 = require('ibm-watson/assistant/v2');
 const { IamAuthenticator} = require('ibm-watson/auth');
 
 const requestMessage =  Router();
-
-const assistant = new AssistantV2({
-  authenticator: new IamAuthenticator({ apikey: 'ruPQwDxedp-C48YplBBezr6fnBijSsESweABQuVXmSZl' }),
-  serviceUrl: 'https://api.us-south.assistant.watson.cloud.ibm.com/',
-  version: '2020-09-24',
-});
-
-async function sendMessageWatson({session, message}){  
-  try{    
-    const responseWatson = await assistant.message({
-      assistantId: '47b3b0e3-af9a-48fa-99e8-2047fb476468',
-      sessionId: session,
-      input: {
-        'message_type': 'text',
-        'text': `${message}`
-        }
-      });    
-    
-      return responseWatson.result.output.generic[0].text;
-  }catch(e){
-    console.error(e.message);
-  }  
-}
+const assistantId = '273b6b99-2cb7-4623-8560-3a5bdb7ebdab';
+let requestSession='';
 
 requestMessage.post('/', async (request, response) => {
-  const {message} = request.body;
-  const sessionId = await assistant.createSession({
-    assistantId: '47b3b0e3-af9a-48fa-99e8-2047fb476468'
-  });
+  const text = request.body.message;
+  try{
+
+    const assistant = new AssistantV2({
+      version: '2020-09-24',
+      authenticator: new IamAuthenticator({
+        apikey: '6GM6SW56FbiWWgBVjGjRF7dweRfyyjB0S31ocChS9ZBb',
+      }),
+      serviceUrl: 'https://api.us-south.assistant.watson.cloud.ibm.com/',
+    });
+
+    
+    console.log(requestSession, 'antes')
+    if(requestSession === ''){
+      console.log(requestSession, 'durante')
+      requestSession = await assistant.createSession({
+        assistantId: assistantId
+      })
+    }
+    console.log(requestSession.result, 'depois')
+    
+    assistant.message({
+      assistantId: assistantId,
+      sessionId: requestSession.result.session_id,
+      input: {
+        'message_type': 'text',
+        'text': text
+        }
+      })
+      .then(res => {
+        console.log(JSON.stringify(res.result))
+        return response.json(JSON.stringify(res.result.output.generic[0].text));
+      })
+      .catch(err => {
+        
+      });
+
+      
+  }
+  catch(err){
+  }
   
-  const requesteWatson = await sendMessageWatson({session: sessionId.result.session_id, message});
-  return response.json({message: requesteWatson});
+  
+  
 });
 
 module.exports = requestMessage;
