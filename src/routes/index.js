@@ -5,5 +5,6 @@ const routes = Router();
 
 routes.use(cors())
 routes.use('/', sendMenssage);
+routes.use('/kill-session',sendMenssage)
 
 module.exports =  routes;

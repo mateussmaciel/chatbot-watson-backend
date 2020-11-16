@@ -3,9 +3,36 @@ const AssistantV2 = require('ibm-watson/assistant/v2');
 const { IamAuthenticator} = require('ibm-watson/auth');
 
 const requestMessage =  Router();
-const assistantId = '273b6b99-2cb7-4623-8560-3a5bdb7ebdab';
+const assistantId = 'f586f5d0-99ed-40f7-ba4b-45da1e720545';
 let requestSession='';
 
+requestMessage.get('/kill-session', async (request, response) => {
+console.log('KILL SESSION')
+
+if(requestSession !== undefined && requestSession !== ''){
+  const assistant = new AssistantV2({
+    version: '2020-09-24',
+    authenticator: new IamAuthenticator({
+      apikey: '4mcMLjMromtJRnizHJVWi2l0SgtEYTp_BoXNGSKLUuFF',
+    }),
+    serviceUrl: 'https://api.us-south.assistant.watson.cloud.ibm.com/',
+  });
+
+  assistant.deleteSession({
+    assistantId: assistantId,
+    sessionId: requestSession.result.session_id,
+  })
+    .then(res => {
+      console.log(JSON.stringify(res.result, null, 2));
+    })
+    .catch(err => {
+      console.log(err);
+    });
+    requestSession='';
+
+}
+}
+)
 requestMessage.post('/', async (request, response) => {
   const text = request.body.message;
   try{
@@ -13,7 +40,7 @@ requestMessage.post('/', async (request, response) => {
     const assistant = new AssistantV2({
       version: '2020-09-24',
       authenticator: new IamAuthenticator({
-        apikey: '6GM6SW56FbiWWgBVjGjRF7dweRfyyjB0S31ocChS9ZBb',
+        apikey: '4mcMLjMromtJRnizHJVWi2l0SgtEYTp_BoXNGSKLUuFF',
       }),
       serviceUrl: 'https://api.us-south.assistant.watson.cloud.ibm.com/',
     });
